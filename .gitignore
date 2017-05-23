@@ -1,0 +1,17 @@
+.DS_Store
+
+# editor project files
+/**/.idea/
+/**/*.map
+/**/*.iml
+*.sublime-project
+*.sublime-workspace
+
+static/
+node_modules/
+vendor/
+logs/
+
+*.cache
+*.sass-cache
+*.log
