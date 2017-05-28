@@ -226,6 +226,9 @@ class Task {
 
         for (let task of this._tasks) {
           treeData = await task.run(treeData)
+          if (treeData instanceof Error) {
+            break
+          }
         }
       }
 
@@ -239,6 +242,8 @@ class Task {
       if (this._iterations <= 1) {
         console.log(error)
         process.exit(1)
+      } else {
+        return error
       }
     }
 
