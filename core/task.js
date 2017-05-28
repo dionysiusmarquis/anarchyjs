@@ -4,10 +4,8 @@ const prettyMs = require('pretty-ms')
 const merge = require('deepmerge')
 
 const moduleExecutor = require('./../helper/module-executor')
-const config = require('./config')
 const Data = require('./../data/data')
 const Handover = require('./../data/handover')
-const tasksConfig = require('./config').get('tasks')
 
 class Task {
   constructor (tree) {
@@ -32,6 +30,7 @@ class Task {
     this._tasks = null
 
     // Set by _buildTasksTree
+    this._job = null
     this._index = null
     this._scope = null
     this._parent = null
@@ -87,11 +86,19 @@ class Task {
     }
 
     let configId = taskString.split(' ')[0]
-    let taskConfig = config.get(configId)
-    let name = configId.split('/')[0]
+    let configPath = configId.split('|')
+    let taskConfig = this._job.getConfig(configPath)
+    let name = configPath[0]
     tasks = tasks || (taskConfig instanceof Array ? taskConfig : taskConfig.tasks) // Todo: Implement tasks merge policies
 
-    let {module, executor} = moduleExecutor(name, {critical: false, aliases: [{from: 'file', to: 'files'}]})
+    let {module, executor} = moduleExecutor(
+      name,
+      {
+        critical: false,
+        aliases: [{from: 'file', to: 'files'}],
+        paths: [`${process.cwd()}/node_modules/anarchyjs/tasks/`, '', process.cwd()]
+      }
+    )
 
     // merge configs
     if (module && module.defaults) {
@@ -124,6 +131,7 @@ class Task {
     this._executor = executor
     this._tasks = []
 
+    let tasksConfig = this._job.getConfig('tasks')
     this._indent = this._scope ? new Array(this._scope.length + 1).join('| '.gray) : ''
     this._logPrefix = `[${colors[[this._config.color || 'cyan']](this[tasksConfig.logPrefix || 'configId'])}]`
 
@@ -139,6 +147,7 @@ class Task {
     let prev = null
     for (let tree of tasks) {
       let task = new Task(tree)
+      task._job = this._job
       task._index = index++
       task._scope = this._scope ? [...this._scope, task._index] : []
 
@@ -161,7 +170,7 @@ class Task {
 
     // check task run condition
     if (this._config.if) {
-      if(!eval(this._config.if)) {
+      if (!eval(this._config.if)) {
         this.log(`${'Task condition not met. Skipping task…'.bold}`, null)
         this._iterations++
         return data
@@ -292,6 +301,8 @@ class Task {
   get id () { return this._id }
 
   get name () { return this._name }
+
+  get job () { return this._job }
 
   get index () { return this._index }
 

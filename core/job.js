@@ -1,21 +1,44 @@
 const colors = require('colors')
 const prettyMs = require('pretty-ms')
 
-const config = require('./config').get('job')
 const Task = require('./task')
 
-process.env.NODE_ENV = process.env.NODE_ENV || config.env
+class Job {
+  constructor (id, config) {
+    this._id = id
+    this._config = config
 
-async function job () {
-  let start = Date.now()
+    let jobConfig = this.getConfig('job')
+    process.env.NODE_ENV = process.env.NODE_ENV || jobConfig.env
 
-  let job = new Task({job: config})
-  job.init()
-  let data = await job.run()
 
-  console.log(`\n (っ^‿^)っ done in ${prettyMs(Date.now() - start).bold}!\n`.bold.green)
+    this._task = new Task({job: jobConfig})
+    this._task._job = this
+    this._task.init()
+  }
 
-  return data
+  async run () {
+    let start = Date.now()
+    let data = await this._task.run()
+
+    console.log(`\n (っ^‿^)っ done in ${prettyMs(Date.now() - start).bold}!\n`.bold.green)
+
+    return data
+  }
+
+  getConfig (target, delimiter = '|') {
+    if (target instanceof Array) {
+      return this._config.get(target) || {}
+    } else {
+      return this._config.get(target.split(delimiter)) || {}
+    }
+  }
+
+  get id () { return this._id }
+
+  get config () { return this._config }
+
+  get task () { return this._task }
 }
 
-job()
+module.exports = Job
