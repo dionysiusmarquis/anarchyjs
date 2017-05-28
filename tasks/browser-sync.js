@@ -35,13 +35,13 @@ async function executor (data, task) {
   }
 
   await new Promise(
-    (resolve, reject) => {
+    (resolve) => {
       bs.init(options,
         error => {
           if (error) {
-            reject(error)
+           throw error
           } else {
-            resolve(data)
+            resolve()
           }
         })
     }
@@ -62,7 +62,9 @@ function reload (data, task) {
     return data
   }
 
-  browserSync.get(name).reload([...data].map(file => {return file.path}))
+  browserSync.get(name).reload([...data].map(file => {
+    return file.path
+  }))
 
   return data
 }

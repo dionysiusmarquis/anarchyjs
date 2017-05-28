@@ -12,7 +12,7 @@ const defaults = {
   handover: {}
 }
 
-function _regEx (type) { return new RegExp(String.raw`(<!--\s*inject:${type}\s*-->)(.|\n)*(<!--\s*end:${type}\s*-->)`) }
+function _regEx (type) { return new RegExp(String.raw`([^\S\n]*)(<!-{2,}\s*inject:${type}\s*-{2,}>)[\S\s]*?(\s*<!-{2,}\s*end:${type}\s*-{2,}>)`) }
 
 function _add (injections, type, data) {
   if (!injections[type]) {
@@ -53,7 +53,7 @@ async function inject (data, task) {
 
     for (let [type, items] of Object.entries(injections)) {
       let regExp = _regEx(type)
-      injectionFile.data = injectionFile._data.replace(regExp, `$1\n${items.join('\n')}\n$3`)
+      injectionFile.data = injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
       task.log(`${items.length} ${items.length === 1 ? 'injection' : 'injections'} from type ${type}`, null)
     }
 

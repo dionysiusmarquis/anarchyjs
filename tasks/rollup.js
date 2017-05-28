@@ -57,7 +57,7 @@ function log (task, message, type = 'error') {
   let messageParts = []
   if (type === 'warning') messageParts.push(String(message.message).bold)
   if (message.url) messageParts.push(message.url)
-  if (message.url) messageParts.push(`${message.loc.file} (${message.loc.line}:${message.loc.column})`)
+  if (message.url && message.loc) messageParts.push(`${message.loc.file} (${message.loc.line}:${message.loc.column})`)
   if (message.frame) messageParts.push(message.frame)
 
   task.log(messageParts.join('\n'), type)
