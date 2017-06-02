@@ -12,7 +12,7 @@ const defaults = {
   handover: {}
 }
 
-function _regEx (type) { return new RegExp(String.raw`([^\S\n]*)(<!-{2,}\s*inject:${type}\s*-{2,}>)[\S\s]*?(\s*<!-{2,}\s*end:${type}\s*-{2,}>)`) }
+function _regEx (type) { return new RegExp(String.raw`([^\S\n]*)(<!-{2,}\s*inject:${type}\s*-{2,}>)[\S\s]*?(\s*<!-{2,}\s*endinject\s*-{2,}>)`) }
 
 function _add (injections, type, data) {
   if (!injections[type]) {
