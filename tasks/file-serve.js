@@ -36,6 +36,27 @@ function executor (data, task) {
   return data
 }
 
+async function get (data, task) {
+  let url = task.handoverConfig.file || task.config.file
+  if (url && has(url)) {
+    let {files, matches} = await Files.factory(data, task)
+    if (matches.length) {
+      let file = matches[0]
+      file.data = _files[url].data
+    } else {
+      let file = new File(url, _files[url].data)
+      files.addFile(file)
+      matches.addFile(file)
+    }
+
+    task.finish(files, matches)
+  } else {
+    task.log(`${url} not served.`)
+  }
+
+  return data
+}
+
 function add (file, base) {
   let fileUrl = `/${path.relative(base, file.path)}`
   let mapUrl = null
@@ -68,16 +89,6 @@ function add (file, base) {
   _files[fileUrl] = {data: file.data, type}
 
   return {fileUrl, mapUrl}
-}
-
-function get (fileUrl) {
-  fileUrl = url.parse(fileUrl).pathname
-
-  if (!_files[fileUrl]) {
-    warn(fileUrl)
-  }
-
-  return _files[fileUrl]
 }
 
 function find (fileUrl) {
