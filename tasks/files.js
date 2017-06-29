@@ -1,6 +1,8 @@
 const File = require('./../data/file')
 const Files = require('./../data/files')
 
+const path = require('path')
+
 defaults = {
   color: 'yellow'
 }
@@ -97,6 +99,20 @@ async function writeFile (data, task) {
   }
 }
 
+function move (data, task) {
+  if (_check(data, task)) {
+    let config = task.config
+    let matches = new Files()
+    for (let file of data) {
+      file.path = path.join(config.dest, path.relative(config.base, file.path))
+      matches.addFile(file)
+    }
+    return task.finish(data, matches)
+  } else {
+    return task.finish(data, null)
+  }
+}
+
 function size (data, task) {
   if (_check(data, task)) {
     data.log(`${data.size} ${data.size === 1 ? 'file' : 'files'}.`)
@@ -117,6 +133,7 @@ module.exports = {
   readFile,
   write,
   writeFile,
+  move,
   size,
   length: size,
   defaults

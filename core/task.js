@@ -87,8 +87,8 @@ class Task {
 
     let configId = taskString.split(' ')[0]
     let configPath = configId.split('|')
-    let taskConfig = this._job.getConfig(configPath)
     let name = configPath[0]
+    let taskConfig = this._tree[name] || this._job.getConfig(configPath)
     tasks = tasks || (taskConfig instanceof Array ? taskConfig : taskConfig.tasks) // Todo: Implement tasks merge policies
 
     let {module, executor} = moduleExecutor(
@@ -184,14 +184,22 @@ class Task {
 
       // Run task
       let dataType = data && data.constructor ? data.constructor : null
-      if (this._module) {
+      if (this._module && this._executor) {
         if (data instanceof Data) {
           data._currentTask = this
         }
         data = await this._executor(data, this)
         this._iterations++
       } else {
-        this.log(`${'executing task tree…'.bold}`, null)
+        if (this._tasks && this._tasks.length) {
+          this.log(`${'executing task tree…'.bold}`, null)
+        } else {
+          if (!this._module) {
+            this.log(`${'could not find task module.'.bold}`, this.LOG_TYPE_ERROR)
+          } else {
+            this.log(`${'could not find task executor.'.bold}`, this.LOG_TYPE_ERROR)
+          }
+        }
       }
 
       // Check for data type changes

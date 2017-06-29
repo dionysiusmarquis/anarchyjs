@@ -53,8 +53,7 @@ function moduleExecutor (name, options = {}) {
     // Todo: rest part of Array '...[0,1]'
     if (executorName) {
       executor = module[executorName]
-    }
-    if (!executor) {
+    } else {
       if (typeof module !== 'function') {
         if (module[moduleName]) {
           executor = module[moduleName]
