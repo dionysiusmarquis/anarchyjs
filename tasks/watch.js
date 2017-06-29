@@ -12,19 +12,19 @@ const defaults = {
   listeners: ['change'] // https://github.com/paulmillr/chokidar#getting-started
 }
 
-async function _run (task, path) {
-  await task.run(path)
+async function _run (watch, task) {
+  await task.run(task.config.handover ? watch.path : watch.data)
   console.log('\n (っ°‿°)っ waiting for files to change…\n'.green.bold)
 }
 
-async function _executor (path, task) {
+async function _executor (data, task) {
   if(task.config.handover) {
-    task.config.files.pattern = path
+    task.config.files.pattern = data
     let {files, matches} = await Files.factory(null, task)
     return task.finish(files, matches)
-  } else {
-    return {}
   }
+  
+  return data
 }
 
 async function watch (data, task) {
@@ -34,7 +34,7 @@ async function watch (data, task) {
 
   let watcher = chokidar.watch(config.path || config.paths, config.options)
   for (let listener of config.listeners) {
-    watcher.on(listener, path => { if (path) { _run(task, path) } })
+    watcher.on(listener, path => { if (path) { _run({data, path}, task) } })
   }
 
   return data

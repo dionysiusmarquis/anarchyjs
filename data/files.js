@@ -32,16 +32,18 @@ class Files extends Data {
 
     if (options.globFiles && options.pattern) {
       let paths = await glob(options.pattern, options.glob)
-      let files = []
+      let matches = this.matches(options.pattern)
+      let matchedPaths = matches.map(file => file._path)
 
+      let files = []
       for (let path of paths) {
-        if (!this._data.get(path)) {
+        if (matchedPaths.indexOf(path) === -1 && !this._data.get(path)) {
           let file = await this.add(path, options)
           files.push(file)
         }
       }
 
-      return files
+      return [...matches, ...files]
     }
 
     return []

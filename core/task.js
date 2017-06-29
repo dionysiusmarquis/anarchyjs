@@ -228,7 +228,7 @@ class Task {
       // Execute child tasks
       if (this._tasks && this._tasks.length) {
         let treeData = {}
-        if (this._module) {
+        if (this._module || this._config.handover) {
           treeData = data instanceof Handover ? data.handover : data
         }
 

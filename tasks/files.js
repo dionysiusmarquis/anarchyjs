@@ -104,7 +104,9 @@ function move (data, task) {
     let config = task.config
     let matches = new Files()
     for (let file of data) {
+      let currentPath = file.path
       file.path = path.join(config.dest, path.relative(config.base, file.path))
+      task.log(`${currentPath} -> ${file.path}`, null)
       matches.addFile(file)
     }
     return task.finish(data, matches)
