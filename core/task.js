@@ -88,7 +88,13 @@ class Task {
     let configId = taskString.split(' ')[0]
     let configPath = configId.split('|')
     let name = configPath[0]
-    let taskConfig = this._tree[name] || this._job.getConfig(configPath)
+    let taskConfig = this._job.getConfig(configPath)
+    if (this._tree[name]) {
+      taskConfig = merge(
+        taskConfig,
+        this._tree[name] instanceof Array ? {tasks: this._tree[name]} : this._tree[name]
+      )
+    }
     tasks = tasks || (taskConfig instanceof Array ? taskConfig : taskConfig.tasks) // Todo: Implement tasks merge policies
 
     let {module, executor} = moduleExecutor(
@@ -228,7 +234,7 @@ class Task {
       // Execute child tasks
       if (this._tasks && this._tasks.length) {
         let treeData = {}
-        if (this._module || this._config.handover) {
+        if (this._config.handover !== false) {
           treeData = data instanceof Handover ? data.handover : data
         }
 

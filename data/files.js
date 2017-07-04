@@ -37,11 +37,18 @@ class Files extends Data {
 
       let files = []
       for (let path of paths) {
-        if (matchedPaths.indexOf(path) === -1 && !this._data.get(path)) {
-          let file = await this.add(path, options)
+        if (matchedPaths.indexOf(path) === -1) {
+          let file = this._data.get(path)
+          if (!file) {
+            file = await this.add(path, options)
+          } else {
+            await file.reset(options.file.read)
+          }
           files.push(file)
         }
       }
+
+      matches.forEach(async file => await file.reset(options.file.read))
 
       return [...matches, ...files]
     }
@@ -56,7 +63,7 @@ class Files extends Data {
     this._data.set(path, file)
 
     if (options.readFiles) {
-      await file.read()
+      await file.read(options.file.read)
     }
 
     return file
@@ -125,7 +132,7 @@ class Files extends Data {
   }
 
   async read (options = {}) {
-    options = merge(this._options.file, options)
+    options = merge(this._options.file.read, options)
     for (let file of this) {
       file._currentTask = this._currentTask
       await file.read(options)
@@ -133,7 +140,7 @@ class Files extends Data {
   }
 
   async readFile (path, options = {}) {
-    options = merge(this._options.file, options)
+    options = merge(this._options.file.read, options)
 
     let file = this._data.get(path)
     if (file) {
@@ -197,6 +204,12 @@ class Files extends Data {
 
   set options (options) {
     this._options = merge(defaults, options)
+  }
+
+  set outdated (value) {
+    for (let file of this) {
+      file.outdated = value
+    }
   }
 
   static check (data) {

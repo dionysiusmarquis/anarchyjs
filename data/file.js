@@ -11,7 +11,10 @@ let defaults = {
     base: ''
   },
   lowercase: false,
-  read: 'utf8',
+  read: {
+    encoding: 'utf8',
+    flag: 'r'
+  },
   write: {
     mkdir: true,
     flag: 'w'
@@ -34,6 +37,7 @@ class File extends Data {
     this._ext = null
     this._name = null
     this._sourceMap = null
+    this.outdated = false
     this.path = filePath
 
     this.options = options
@@ -43,8 +47,32 @@ class File extends Data {
     }
   }
 
+  async reset (options = {}) {
+    if (!this.outdated) {
+      return
+    }
+    
+    let originPath = null
+    if (this._history.length) {
+      if (this._history[0]) {
+        originPath = this._history[0]
+        this._history = []
+      } else {
+        originPath = this._path
+        this._history = [null]
+      }
+    } else {
+      originPath = this._path
+      this._history = []
+    }
+    this._path = originPath
+    await this.read(options)
+  }
+
   async read (options = {}) {
-    this.data = await fs.readFile(this._path, options.read || this._options.read)
+    options = merge(this._options.read, typeof options === 'string' ? {encoding: options} : options)
+    this.data = await fs.readFile(this._path, options)
+    this.outdated = false
     return this._data
   }
 
@@ -136,7 +164,7 @@ class File extends Data {
   }
 
   set path (value) {
-    if (this._path !== value) {
+    if (this._path && this._path !== value) {
       this._history.push(this._path)
     }
     this._path = value

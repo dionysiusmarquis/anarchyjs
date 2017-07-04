@@ -62,9 +62,7 @@ function reload (data, task) {
     return data
   }
 
-  browserSync.get(name).reload([...data].map(file => {
-    return file.path
-  }))
+  browserSync.get(name).reload([...data].map(file => file.path))
 
   return data
 }
