@@ -1,4 +1,4 @@
-var mimeTypes = require('mime-types')
+const mimeTypes = require('mime-types')
 const colors = require('colors')
 const url = require('url')
 const path = require('path')
@@ -6,7 +6,8 @@ const path = require('path')
 const File = require('./../data/file')
 const Files = require('./../data/files')
 
-const _files = {}
+const _cache = {}
+const _aliases = {}
 
 const defaults = {
   base: ''
@@ -27,6 +28,12 @@ function executor (data, task) {
     } else {
       let {fileUrl, mapUrl} = add(file, task.config.base)
       task.log(`Serving file ${fileUrl}`, null)
+
+      if (task.config.alias && data instanceof File) {
+        _aliases[task.config.alias] = fileUrl
+        task.log(`Added alias '${task.config.alias}' for file ${fileUrl}`, null)
+      }
+
       if (mapUrl) {
         task.log(`Serving source map ${mapUrl}`, null)
       }
@@ -42,9 +49,9 @@ async function get (data, task) {
     let {files, matches} = await Files.factory(data, task)
     if (matches.length) {
       let file = matches[0]
-      file.data = _files[url].data
+      file.data = _cache[url].data
     } else {
-      let file = new File(url, _files[url].data)
+      let file = new File(url, _cache[url].data)
       files.addFile(file)
       matches.addFile(file)
     }
@@ -74,7 +81,7 @@ function add (file, base) {
           throw new Error(`No MIME type for source map ${mapUrl} detected.`)
         }
 
-        _files[mapUrl] = {data: file.sourceMapString, type}
+        _cache[mapUrl] = {data: file.sourceMapString, type}
       }
     }
   }
@@ -86,36 +93,40 @@ function add (file, base) {
     throw new Error(`No MIME type for ${fileUrl} detected.`)
   }
 
-  _files[fileUrl] = {data: file.data, type}
+  _cache[fileUrl] = {data: file.data, type}
 
   return {fileUrl, mapUrl}
 }
 
 function find (fileUrl) {
-  if (fileUrl.length === 1) {
-    return
-  }
-
   fileUrl = url.parse(fileUrl).pathname
-  return _files[fileUrl]
+  let alias = _aliases[fileUrl]
+  return _cache[fileUrl] || _cache[alias]
 }
 
 function has (fileUrl) {
   fileUrl = url.parse(fileUrl).pathname
 
-  return !(!_files[fileUrl])
+  return !(!_cache[fileUrl]) || !(!_aliases[fileUrl])
 }
 
 function remove (fileUrl) {
   fileUrl = url.parse(fileUrl).pathname
 
-  if (!_files[fileUrl]) {
+  if (!_cache[fileUrl]) {
     warn(fileUrl)
     return
   }
 
-  _files[fileUrl] = null
-  delete _files[fileUrl]
+  _cache[fileUrl] = null
+  delete _cache[fileUrl]
+
+  for (let [alias, value] of Object.entries(_aliases)) {
+    if (value === fileUrl) {
+      _aliases[alias] = null
+      delete _aliases[alias]
+    }
+  }
 }
 
 function middleware (req, res, next) {
@@ -131,7 +142,7 @@ function middleware (req, res, next) {
 
 module.exports = {
   executor,
-  files: _files,
+  files: _cache,
   add,
   get,
   find,
