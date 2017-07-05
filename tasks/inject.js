@@ -7,6 +7,7 @@ const injections = {}
 
 const defaults = {
   color: 'yellow',
+  clean: false,
   dest: '',
   base: '',
   handover: {}
@@ -53,7 +54,10 @@ async function inject (data, task) {
 
     for (let [type, items] of Object.entries(injections)) {
       let regExp = _regEx(type)
-      injectionFile.data = injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
+      injectionFile.data =
+        config.clean ?
+        injectionFile._data.replace(regExp, `$1${items.join('\n$1')}`) :
+        injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
       task.log(`${injectionFile.path}: ${items.length} ${items.length === 1 ? 'injection' : 'injections'} from type ${type}`, null)
     }
 
