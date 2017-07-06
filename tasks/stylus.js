@@ -42,6 +42,36 @@ async function executor (data, task) {
 
     // Todo: implement remaining stylus methods
 
+    styles.define('log', arg => {
+      let output = []
+
+      switch (arg.constructor.name) {
+        case 'Boolean':
+        case 'String':
+          output.push(arg.val)
+          break
+
+        default:
+          output.push(`${arg.constructor.name}{`)
+
+          let properties = []
+          if (arg.name) {
+            properties.push(`name: ${arg.name}`)
+          }
+
+          if (arg.val !== undefined) {
+            properties.push(`value: ${arg.val}`)
+          }
+
+          output.push(properties.join(', '))
+          output.push('}')
+      }
+
+      console.log(output.join(' '))
+    })
+
+    styles.define('log-raw', arg => console.log(arg))
+
     let css = styles.render()
     let map = styles.sourcemap
 

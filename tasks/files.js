@@ -1,7 +1,8 @@
+const path = require('path')
+const hasha = require('hasha')
+
 const File = require('./../data/file')
 const Files = require('./../data/files')
-
-const path = require('path')
 
 defaults = {
   color: 'yellow'
@@ -124,6 +125,30 @@ function size (data, task) {
   }
 }
 
+async function hash (data, task) {
+  if (_check(data, task)) {
+    for (let file of data) {
+      if (file._data) {
+        let options = Object.assign({algorithm: 'md5'}, task.config.options) // https://www.npmjs.com/package/hasha
+        let dataHash = hasha(file._data, options)
+
+        task.log(`Hashed ${file.path}`, null)
+
+        file.path = path.format({
+          root: file._root,
+          dir: file._dir,
+          name: `${file._name}.${dataHash}`,
+          ext: file._ext
+        })
+      } else {
+        task.log(`File ${file.path} has no data for hashing`, task.LOG_TYPE_WARNING)
+      }
+    }
+  }
+
+  return data
+}
+
 module.exports = {
   executor: glob,
   glob,
@@ -138,5 +163,6 @@ module.exports = {
   move,
   size,
   length: size,
+  hash,
   defaults
 }
