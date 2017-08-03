@@ -1,5 +1,5 @@
-const mimeTypes = require('mime-types')
 const colors = require('colors')
+const mimeTypes = require('mime-types')
 const url = require('url')
 const path = require('path')
 
@@ -27,15 +27,15 @@ function executor (data, task) {
       task.log(`Invalid url: ${file.path}`, task.LOG_TYPE_WARNING)
     } else {
       let {fileUrl, mapUrl} = add(file, task.config.base)
-      task.log(`Serving file ${fileUrl}`, null)
+      task.log(`Serving file ${fileUrl}`.gray, null)
 
       if (task.config.alias && data instanceof File) {
         _aliases[task.config.alias] = fileUrl
-        task.log(`Added alias '${task.config.alias}' for file ${fileUrl}`, null)
+        task.log(`Added alias '${task.config.alias}' for file ${fileUrl}`.gray, null)
       }
 
       if (mapUrl) {
-        task.log(`Serving source map ${mapUrl}`, null)
+        task.log(`Serving source map ${mapUrl}`.gray, null)
       }
     }
   }

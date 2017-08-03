@@ -11,6 +11,7 @@ const defaults = {
   options: {}, // https://github.com/imagemin/imagemin
   files: {},
   buffer: true,
+  verbose: false, // todo: global log depth
   handover: {
     files: {
       pattern: '**/*.{jpg,jpeg,png,gif}'
@@ -49,7 +50,7 @@ async function executor (data, task) {
   }
 
   const percent = totalBytes > 0 ? (totalSavedBytes / totalBytes) * 100 : 0
-  let msg = `Minified ${totalFiles} ${plur('image', totalFiles)}`
+  let msg = `Minified ${totalFiles} ${plur('image', totalFiles)}`.gray
 
   if (totalFiles > 0) {
     msg += ` (saved ${fileSize(totalSavedBytes, config.fileSize)} - ${percent.toFixed(1).replace(/\.0$/, '')}%)`.gray

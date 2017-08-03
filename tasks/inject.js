@@ -54,7 +54,7 @@ async function inject (data, task) {
       injectionFile.data = config.clean
         ? injectionFile._data.replace(regExp, `$1${items.join('\n$1')}`)
         : injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
-      task.log(`${injectionFile.path}: ${items.length} ${items.length === 1 ? 'injection' : 'injections'} from type ${type}`, null)
+      task.log(`${injectionFile.path}: ${items.length} ${items.length === 1 ? 'injection' : 'injections'} from type ${type}`.gray, null)
     }
 
     return task.finish(files, injectionFile)
