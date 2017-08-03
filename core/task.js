@@ -42,46 +42,6 @@ class Task {
     // console.log(this)
   }
 
-  get isLast () { return !this._tasks.length && !this._next }
-
-  get isFirst () { return !this._prev }
-
-  get id () { return this._id }
-
-  get name () { return this._name }
-
-  get job () { return this._job }
-
-  get index () { return this._index }
-
-  get configId () { return this._configId }
-
-  get tree () { return this._tree }
-
-  get defaults () { return this._defaults }
-
-  get config () { return this._config }
-
-  get handoverConfig () { return this._handoverConfig }
-
-  get scope () { return this._scope }
-
-  get module () { return this._module }
-
-  get executor () { return this._executor }
-
-  get tasks () { return this._tasks }
-
-  get iterations () { return this._iterations }
-
-  get parent () { return this._parent }
-
-  get prev () { return this._prev }
-
-  get next () { return this._next }
-
-  get isAnarchy () { return this instanceof Task }
-
   init () {
     let defaults = null
     let tasks = null
@@ -352,6 +312,46 @@ class Task {
 
     console.log(output.join(' '))
   }
+
+  get isLast () { return !this._tasks.length && !this._next }
+
+  get isFirst () { return !this._prev }
+
+  get id () { return this._id }
+
+  get name () { return this._name }
+
+  get job () { return this._job }
+
+  get index () { return this._index }
+
+  get configId () { return this._configId }
+
+  get tree () { return this._tree }
+
+  get defaults () { return this._defaults }
+
+  get config () { return this._config }
+
+  get handoverConfig () { return this._handoverConfig }
+
+  get scope () { return this._scope }
+
+  get module () { return this._module }
+
+  get executor () { return this._executor }
+
+  get tasks () { return this._tasks }
+
+  get iterations () { return this._iterations }
+
+  get parent () { return this._parent }
+
+  get prev () { return this._prev }
+
+  get next () { return this._next }
+
+  get isAnarchy () { return this instanceof Task }
 }
 
 module.exports = Task

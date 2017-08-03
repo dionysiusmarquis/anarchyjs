@@ -23,20 +23,6 @@ class Files extends Data {
     this.options = options
   }
 
-  set options (options) {
-    this._options = merge(defaults, options)
-  }
-
-  set outdated (value) {
-    for (let file of this) {
-      file.outdated = value
-    }
-  }
-
-  get length () { return this._data.size }
-
-  get size () { return this._data.size }
-
   static check (data) {
     return data instanceof Files
   }
@@ -292,6 +278,20 @@ class Files extends Data {
   }
 
   [Symbol.iterator] () { return this._data.values() }
+
+  set options (options) {
+    this._options = merge(defaults, options)
+  }
+
+  set outdated (value) {
+    for (let file of this) {
+      file.outdated = value
+    }
+  }
+
+  get length () { return this._data.size }
+
+  get size () { return this._data.size }
 }
 
 module.exports = Files

@@ -48,6 +48,23 @@ class File extends Data {
     }
   }
 
+  static check (data) {
+    return data instanceof File
+  }
+
+  static async factory (data = null, task = null) { // todo: add handover etc.
+    let file = null
+    if (File.check(data)) {
+      file = data
+      file._currentTask = task
+    } else {
+      file = new File(task.config.file, null, task)
+      await file.read(task.config.read)
+    }
+
+    return file
+  }
+
   async reset (options = {}) {
     if (!this.outdated) {
       return
@@ -164,25 +181,13 @@ class File extends Data {
     return {path: sourceMapPath, url: null, inline: false}
   }
 
-  set path (value) {
-    if (this._path && this._path !== value) {
-      this._history.push(this._path)
-    }
-    this._path = value
+  * [Symbol.iterator] () { yield this }
 
-    let {dir, root, base, name, ext} = path.parse(value)
-    this._dir = dir
-    this._root = root
-    this._base = base
-    this._name = name
-    this._ext = ext
-  }
+  get options () { return this._options }
 
   set options (options) {
     this._options = merge(defaults, options)
   }
-
-  get options () { return this._options }
 
   set sourceMappingURL (url) {
     if (url) {
@@ -211,6 +216,20 @@ class File extends Data {
 
   get path () { return this._path }
 
+  set path (value) {
+    if (this._path && this._path !== value) {
+      this._history.push(this._path)
+    }
+    this._path = value
+
+    let {dir, root, base, name, ext} = path.parse(value)
+    this._dir = dir
+    this._root = root
+    this._base = base
+    this._name = name
+    this._ext = ext
+  }
+
   get root () { return this._root }
 
   get dir () { return this._dir }
@@ -218,6 +237,8 @@ class File extends Data {
   get base () { return this._base }
 
   get ext () { return this._ext }
+
+  get extension () { return this._ext }
 
   get name () { return this._ext }
 
@@ -230,25 +251,6 @@ class File extends Data {
   get length () { return 1 }
 
   get size () { return 1 }
-
-  static check (data) {
-    return data instanceof File
-  }
-
-  static async factory (data = null, task = null) { // todo: add handover etc.
-    let file = null
-    if (File.check(data)) {
-      file = data
-      file._currentTask = task
-    } else {
-      file = new File(task.config.file, null, task)
-      await file.read(task.config.read)
-    }
-
-    return file
-  }
-
-  * [Symbol.iterator] () { yield this }
 }
 
 module.exports = File
