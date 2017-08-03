@@ -48,14 +48,15 @@ function httpRequest (params, tries = 0) {
         resolve(response)
       } catch (error) {
         if (tries < options.tries) {
+          let errorMessage = ''
           try {
             if (error.statusCode) {
-              error = `Server responded with ${String(error.statusCode).bold}`
+              errorMessage = `Server responded with ${String(error.statusCode).bold}`
             } else if (error.message) {
-              error = String(error.cause).bold
+              errorMessage = String(error.cause).bold
             }
 
-            console.log(`[${options.name.blue}] ${'(warning)'.yellow} ${error}`)
+            console.log(`[${options.name.blue}] ${'(warning)'.yellow} ${errorMessage}`)
             console.log(`[${options.name.blue}] ${options.tries - tries} tries left. Retrying …`)
 
             await _wait(1000)

@@ -48,7 +48,7 @@ function render (data, task) {
   let totalSize = 0
   let totalGzipSize = 0
 
-  if(saved.length > 1) {
+  if (saved.length > 1) {
     saved.push('result')
   }
 

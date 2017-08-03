@@ -2,7 +2,7 @@ const path = require('path')
 
 function moduleExecutor (name, options = {}) {
   let defaults = {
-    paths: [`${process.cwd()}/node_modules`, process.cwd(), `${process.cwd()}/node_modules/anarchyjs/tasks/`, ''], // Todo: remove '/node_modules/anarchyjs/tasks/'
+    paths: [`${process.cwd()}/node_modules`, process.cwd(), `${process.cwd()}/node_modules/anarchyjs/tasks/`, ''], // todo: remove '/node_modules/anarchyjs/tasks/'
     critical: true,
     aliases: [],
     delimiter: '.'
@@ -50,7 +50,7 @@ function moduleExecutor (name, options = {}) {
 
   if (module) {
     // module executor
-    // Todo: rest part of Array '...[0,1]'
+    // todo: rest part of Array '...[0,1]'
     if (executorName) {
       executor = module[executorName]
     } else {

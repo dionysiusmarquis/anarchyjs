@@ -1,6 +1,5 @@
 const colors = require('colors')
 const rollup = require('rollup')
-const path = require('path')
 
 const Files = require('./../data/files')
 const File = require('./../data/file')

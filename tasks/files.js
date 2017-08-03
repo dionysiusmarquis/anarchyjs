@@ -4,7 +4,7 @@ const hasha = require('hasha')
 const File = require('./../data/file')
 const Files = require('./../data/files')
 
-defaults = {
+const defaults = {
   color: 'yellow'
 }
 
@@ -106,7 +106,7 @@ function move (data, task) {
     let matches = new Files()
     for (let file of data) {
       let currentPath = file.path
-      file.path = path.join(config.dest, path.relative(config.base, file.path))
+      file.path = path.join(config.dest, path.relative(config.base || '', file.path))
       task.log(`${currentPath} -> ${file.path}`, null)
       matches.addFile(file)
     }

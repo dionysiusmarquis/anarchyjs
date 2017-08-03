@@ -24,7 +24,7 @@ function phpServerRequests (requests, options = {}) {
           }
         }
 
-        if(!options.keepServer) {
+        if (!options.keepServer) {
           server.close()
         }
 

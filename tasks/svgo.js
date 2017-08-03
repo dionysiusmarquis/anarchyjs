@@ -1,5 +1,4 @@
-const svgo = require('svgo')
-const path = require('path')
+const SVGO = require('svgo')
 
 const Files = require('./../data/files')
 
@@ -14,7 +13,6 @@ const defaults = {
     }
   }
 }
-
 
 /*
  promise wrapper until svgo promisify is available via npm
@@ -40,7 +38,7 @@ async function executor (data, task) {
   let config = task.config
   let {files, matches} = await Files.factory(data, task)
 
-  const svgoInstance = new svgo(config.options)
+  const svgoInstance = new SVGO(config.options)
 
   for (let file of matches) {
     let svg = await svgoPromise(svgoInstance, file.data)

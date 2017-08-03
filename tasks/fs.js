@@ -1,7 +1,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 
-defaults = {
+const defaults = {
   color: 'yellow'
 }
 
@@ -19,7 +19,7 @@ async function createDir (data, task) {
   return data
 }
 
-async function createFile (data, taks) {
+async function createFile (data, task) {
   await fs.ensureFile(task.config.path || task.config.file)
   return data
 }
@@ -36,7 +36,7 @@ async function create (data, task) {
 }
 
 async function remove (data, task) {
-  await fs.ensureDir(_path(task.config))
+  await fs.remove(_path(task.config))
   return data
 }
 
@@ -54,5 +54,6 @@ module.exports = {
   mkdirp: createDir,
   empty,
   clear: empty,
+  remove,
   defaults
 }

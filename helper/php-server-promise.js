@@ -82,14 +82,15 @@ function create (params) {
 
         resolve(this)
       } catch (error) {
+        let errorMessage = ''
         if (error.statusCode) {
-          error = `Server responded with ${String(error.statusCode).bold}`
+          errorMessage = `Server responded with ${String(error.statusCode).bold}`
         } else if (error.message) {
-          error = String(error.cause).bold
+          errorMessage = String(error.cause).bold
         }
 
-        error = `[${options.name.blue}] ${'(error)'.red} ${error}`
-        reject(error)
+        errorMessage = `[${options.name.blue}] ${'(error)'.red} ${errorMessage}`
+        reject(errorMessage)
       }
     }
   )

@@ -12,7 +12,7 @@ const defaults = {
   dest: '',
 }
 
-async function static (data, task) {
+async function executor (data, task) {
   let config = task.config
   let {files} = await Files.factory(data, task)
   let staticFiles = new Files(task)
@@ -64,4 +64,4 @@ async function static (data, task) {
   return task.finish(files, staticFiles)
 }
 
-module.exports = {static, defaults}
+module.exports = {executor, defaults}

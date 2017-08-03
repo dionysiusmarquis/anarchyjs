@@ -39,7 +39,7 @@ async function executor (data, task) {
       bs.init(options,
         error => {
           if (error) {
-           throw error
+            throw error
           } else {
             resolve()
           }

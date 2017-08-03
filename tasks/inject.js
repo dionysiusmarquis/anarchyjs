@@ -3,8 +3,6 @@ const path = require('path')
 const Files = require('./../data/files')
 const File = require('./../data/file')
 
-const injections = {}
-
 const defaults = {
   color: 'yellow',
   clean: false,
@@ -48,16 +46,14 @@ async function inject (data, task) {
           default:
             _add(injections, type, file.data)
         }
-
       }
     }
 
     for (let [type, items] of Object.entries(injections)) {
       let regExp = _regEx(type)
-      injectionFile.data =
-        config.clean ?
-        injectionFile._data.replace(regExp, `$1${items.join('\n$1')}`) :
-        injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
+      injectionFile.data = config.clean
+        ? injectionFile._data.replace(regExp, `$1${items.join('\n$1')}`)
+        : injectionFile._data.replace(regExp, `$1$2\n$1${items.join('\n$1')}$3`)
       task.log(`${injectionFile.path}: ${items.length} ${items.length === 1 ? 'injection' : 'injections'} from type ${type}`, null)
     }
 
