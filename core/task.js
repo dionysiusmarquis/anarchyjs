@@ -1,4 +1,3 @@
-const traverse = require('traverse')
 const colors = require('colors')
 const prettyMs = require('pretty-ms')
 const merge = require('deepmerge')
@@ -42,6 +41,46 @@ class Task {
     // console.log(tree)
     // console.log(this)
   }
+
+  get isLast () { return !this._tasks.length && !this._next }
+
+  get isFirst () { return !this._prev }
+
+  get id () { return this._id }
+
+  get name () { return this._name }
+
+  get job () { return this._job }
+
+  get index () { return this._index }
+
+  get configId () { return this._configId }
+
+  get tree () { return this._tree }
+
+  get defaults () { return this._defaults }
+
+  get config () { return this._config }
+
+  get handoverConfig () { return this._handoverConfig }
+
+  get scope () { return this._scope }
+
+  get module () { return this._module }
+
+  get executor () { return this._executor }
+
+  get tasks () { return this._tasks }
+
+  get iterations () { return this._iterations }
+
+  get parent () { return this._parent }
+
+  get prev () { return this._prev }
+
+  get next () { return this._next }
+
+  get isAnarchy () { return this instanceof Task }
 
   init () {
     let defaults = null
@@ -92,10 +131,11 @@ class Task {
     if (this._tree[name]) {
       taskConfig = merge(
         taskConfig,
-        this._tree[name] instanceof Array ? {tasks: this._tree[name]} : this._tree[name]
+        this._tree[name] instanceof Array ? {tasks: this._tree[name]} : this._tree[name],
+        {arrayMerge: (_, src) => src} // todo: different array merge policies?
       )
     }
-    tasks = tasks || (taskConfig instanceof Array ? taskConfig : taskConfig.tasks) // Todo: Implement tasks merge policies
+    tasks = tasks || (taskConfig instanceof Array ? taskConfig : taskConfig.tasks)
 
     let {module, executor} = moduleExecutor(
       name,
@@ -109,15 +149,15 @@ class Task {
     // merge configs
     if (module && module.defaults) {
       defaults = module.defaults
-      taskConfig = merge(module.defaults, taskConfig)
+      taskConfig = merge(module.defaults, taskConfig, {arrayMerge: (_, src) => src})
     }
 
     if (inlineConfig) {
-      taskConfig = merge(taskConfig, inlineConfig)
+      taskConfig = merge(taskConfig, inlineConfig, {arrayMerge: (_, src) => src})
     }
 
     // create handover config
-    let handoverConfig = taskConfig.handover ? merge(taskConfig, taskConfig.handover) : taskConfig
+    let handoverConfig = taskConfig.handover ? merge(taskConfig, taskConfig.handover, {arrayMerge: (_, src) => src}) : taskConfig
     if (handoverConfig.handover) {
       handoverConfig.handover = null
       delete handoverConfig.handover
@@ -281,8 +321,8 @@ class Task {
     if (arguments.length > 2) {
       let args = Array.from(arguments)
       let types = this._logTypes
-      type = args.filter(value => {return types.indexOf(value) !== -1})[0] || this.LOG_TYPE_DEBUG
-      message = args.filter(value => {return types.indexOf(value) === -1})
+      type = args.filter(value => { return types.indexOf(value) !== -1 })[0] || this.LOG_TYPE_DEBUG
+      message = args.filter(value => { return types.indexOf(value) === -1 })
     } else if (type !== null && this._logTypes.indexOf(arguments[1]) === -1) {
       type = this.LOG_TYPE_DEBUG
       message = Array.from(arguments)
@@ -290,7 +330,7 @@ class Task {
 
     if (message instanceof Array) {
       message = message
-        .map(value => {return typeof value !== 'string' ? JSON.stringify(value, null, 2) : value})
+        .map(value => { return typeof value !== 'string' ? JSON.stringify(value, null, 2) : value })
         .join(' ')
     }
 
@@ -312,46 +352,6 @@ class Task {
 
     console.log(output.join(' '))
   }
-
-  get isLast () { return !this._tasks.length && !this._next }
-
-  get isFirst () { return !this._prev }
-
-  get id () { return this._id }
-
-  get name () { return this._name }
-
-  get job () { return this._job }
-
-  get index () { return this._index }
-
-  get configId () { return this._configId }
-
-  get tree () { return this._tree }
-
-  get defaults () { return this._defaults }
-
-  get config () { return this._config }
-
-  get handoverConfig () { return this._handoverConfig }
-
-  get scope () { return this._scope }
-
-  get module () { return this._module }
-
-  get executor () { return this._executor}
-
-  get tasks () { return this._tasks}
-
-  get iterations () { return this._iterations }
-
-  get parent () { return this._parent }
-
-  get prev () { return this._prev }
-
-  get next () { return this._next }
-
-  get isAnarchy () { return this instanceof Task }
 }
 
 module.exports = Task

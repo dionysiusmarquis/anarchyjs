@@ -37,6 +37,7 @@ class File extends Data {
     this._ext = null
     this._name = null
     this._sourceMap = null
+    this._encoding = null
     this.outdated = false
     this.path = filePath
 
@@ -51,7 +52,7 @@ class File extends Data {
     if (!this.outdated) {
       return
     }
-    
+
     let originPath = null
     if (this._history.length) {
       if (this._history[0]) {
@@ -71,6 +72,7 @@ class File extends Data {
 
   async read (options = {}) {
     options = merge(this._options.read, typeof options === 'string' ? {encoding: options} : options)
+    this._encoding = !options.encoding ? 'buffer' : options.encoding
     this.data = await fs.readFile(this._path, options)
     this.outdated = false
     return this._data
@@ -112,7 +114,6 @@ class File extends Data {
     }
 
     await fs.writeFile(this._path, this._data, options.write)
-
   }
 
   destroy () {
@@ -149,7 +150,7 @@ class File extends Data {
     if (options.inline) {
       return {
         path: sourceMapPath,
-        url: `data:application/json;charset=utf-8;base64,${new Buffer(this.sourceMapString).toString('base64')}`,
+        url: `data:application/json;charset=utf-8;base64,${Buffer.from(this.sourceMapString).toString('base64')}`,
         inline: true
       }
     } else if (options && options.write) {
@@ -220,6 +221,8 @@ class File extends Data {
 
   get name () { return this._ext }
 
+  get encoding () { return this._encoding }
+
   get sourceMap () { return this._sourceMap }
 
   get history () { return this._history }
@@ -232,7 +235,7 @@ class File extends Data {
     return data instanceof File
   }
 
-  static async factory (data = null, task = null) { // Todo: add handover etc.
+  static async factory (data = null, task = null) { // todo: add handover etc.
     let file = null
     if (File.check(data)) {
       file = data

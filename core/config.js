@@ -8,6 +8,14 @@ const merge = require('deepmerge')
 const moduleExecutor = require('./../helper/module-executor')
 const configs = {}
 
+function _error (error) {
+  if (error.name === 'YAMLException') {
+    console.error('error'.red, error.message)
+  }
+
+  throw error
+}
+
 function _buildConfig (file) {
   let parentConfig = null
 
@@ -25,12 +33,17 @@ function _buildConfig (file) {
       parentPath.ext = '.yml'
     }
 
-    // Todo: easier relative path without './'
+    // todo: easier relative path without './'
     let parentFile = path.format(parentPath)
     parentConfig = _buildConfig(path.resolve(path.dirname(file), path.join(parentFile)))
   }
 
-  let config = yaml.safeLoad(configData)
+  let config = null
+  try {
+    config = yaml.safeLoad(configData)
+  } catch (error) {
+    _error(error)
+  }
 
   if (parentConfig) { // todo: inline config (currently in anarchyjs/Task)
     const travConfig = traverse(config)
@@ -72,8 +85,14 @@ function _buildConfig (file) {
           return index === this.path.length - 1 ? name : value
         })
 
-        let targetNode = travConfig.get(arrayPath) || travParentConfig.get(arrayPath)
-        // console.log(policy, travConfig.get(arrayPath), arrayPath)
+        const parentName = this.path[this.path.length - 2]
+        let targetNode =
+          travConfig.get(arrayPath) ||
+          travParentConfig.get(arrayPath) ||
+          travConfig.get([parentName, name]) ||
+          travParentConfig.get([parentName, name])
+
+        // console.log(policy, travConfig.get(arrayPath), arrayPath, this.path)
         if (targetNode && targetNode instanceof Array) {
           let injection = node instanceof Array ? node : [node]
 
@@ -107,7 +126,7 @@ function _buildConfig (file) {
     config = merge(
       parentConfig,
       config,
-      {arrayMerge: (dest, src) => src}
+      {arrayMerge: (_, src) => src}
     )
   }
 
@@ -139,7 +158,7 @@ function _importModules (config) {
                 let restMatch = /\.{3,}\s*(.+)/.exec(moduleNode.module || moduleNode)
                 if (restMatch && restMatch.length) {
                   let {executor, type} = moduleExecutor(restMatch[1])
-                  let injection = type === 'function' ? executor(moduleNode.options) : executor
+                  let injection = type === 'function' ? executor(node.options || node['()']) : executor
 
                   if (injection instanceof Array) {
                     for (let [, value] of injection.entries()) {
@@ -170,25 +189,25 @@ function _importModules (config) {
 
           if (name !== null) {
             let {executor, type} = moduleExecutor(node.module || node)
-            let injection = type === 'function' ? executor(node.options) : executor
+            let injection = type === 'function' ? executor(node.options || node['()']) : executor
 
             this.remove()
             if (name) {
               this.key = name
               this.update(injection)
             } else {
-              this.parent.update(
-                Object.assign(
-                  this.parent.node,
-                  injection
-                )
-              )
+              this.parent.update(injection)
+              // this.parent.update(
+              //   Object.assign(
+              //     this.parent.node,
+              //     injection
+              //   )
+              // ) ????
             }
             console.log(`[${'config'.yellow}] Imported ${[...this.path].map((value, index) => {
               return index === this.path.length - 1 ? name : value.replace('-> ', '')
             }).join('/').bold} from ${node.module || node}`)
           }
-
         }
       }
     }
@@ -200,7 +219,13 @@ function _importModules (config) {
 function compile (id, configFile, personalFile = null) {
   let config = _buildConfig(configFile)
 
-  let personalConfig = yaml.safeLoad(fs.readFileSync(personalFile, 'utf8'))
+  let personalConfig = null
+  try {
+    personalConfig = yaml.safeLoad(fs.readFileSync(personalFile, 'utf8'))
+  } catch (error) {
+    _error(error)
+  }
+
   if (personalConfig) {
     config = merge(
       config,
