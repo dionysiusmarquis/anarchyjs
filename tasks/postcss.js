@@ -1,7 +1,5 @@
 const postcss = require('postcss')
-const path = require('path')
 
-const requireModules = require('./../helper/require-modules')
 const Files = require('./../data/files')
 
 const defaults = {
@@ -25,8 +23,6 @@ async function executor (data, task) {
   if (!matches.size) {
     return data
   }
-
-  let plugins = requireModules(config.plugins)
 
   // process files
   for (let file of matches) {
@@ -52,7 +48,7 @@ async function executor (data, task) {
       options.map.annotation = false
     }
 
-    let {css, map} = await postcss(plugins).process(file.data, options)
+    let {css, map} = await postcss(config.plugins).process(file.data, options)
 
     if (map) {
       file._sourceMap = map.toJSON()

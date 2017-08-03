@@ -19,7 +19,9 @@ async function _run (data, task) {
 }
 
 async function _executor (watch, task) {
-  if(task.config.listened) {
+  task.log(`${watch.listener.bold} ${watch.path}`, null)
+
+  if (task.config.listened) {
     task.config.files.pattern = watch.path
     let {files, matches} = await Files.factory(null, task)
     return task.finish(files, matches)
@@ -39,7 +41,15 @@ async function watch (data, task) {
 
   let watcher = chokidar.watch(config.path || config.paths, config.options)
   for (let listener of config.listeners) {
-    watcher.on(listener, path => { if (path) { _run({data, path}, task) } })
+    watcher.on(listener, path => {
+      if (!task.job.running) {
+        if (path) {
+          _run({data, path, listener}, task)
+        }
+      } else {
+        task.log('Job still running. Skipping…', task.LOG_TYPE_WARNING)
+      }
+    })
   }
 
   return data
