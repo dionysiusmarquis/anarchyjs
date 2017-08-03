@@ -64,7 +64,7 @@ class Task {
       }
     }
 
-    // Add inline config
+    // Add inline config (eg. file=file.ext or file:file.ext with spaces file=(my file.ext) or file={my file.ext})
     let configRegEx = /([^:={}()\s]+?)\s*[=:]\s*(\(.+?\)|{.+?}|\S+)/g
     let configMatch = configRegEx.exec(taskString)
     while (configMatch !== null) {
