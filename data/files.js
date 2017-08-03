@@ -23,6 +23,95 @@ class Files extends Data {
     this.options = options
   }
 
+  set options (options) {
+    this._options = merge(defaults, options)
+  }
+
+  set outdated (value) {
+    for (let file of this) {
+      file.outdated = value
+    }
+  }
+
+  get length () { return this._data.size }
+
+  get size () { return this._data.size }
+
+  static check (data) {
+    return data instanceof Files
+  }
+
+  static async factory (data = {}, task = null) {
+    let isHandover = data && data.isHandover
+
+    let options = (
+      isHandover ? (task.handoverConfig.files || task.handoverConfig.file) : (task.config.files || task.config.file)
+    ) || {}
+
+    let files = null
+    let matchingFiles = null
+    let matches = null
+
+    // get pattern
+    if (typeof options === 'string' || options instanceof Array) {
+      options = {pattern: options}
+    }
+
+    if (task.config.buffer) {
+      if (!options.file) {
+        options.file = {}
+      }
+      options.file.read = {
+        encoding: null
+      }
+    }
+
+    // console.log(options)
+
+    // find matches
+    if (isHandover) {
+      if (File.check(data)) {
+        files = new Files()
+        files.addFile(data)
+      } else if (Files.check(data)) {
+        files = data
+      } else {
+        files = new Files()
+      }
+      matchingFiles = files.matches(options.pattern)
+    } else {
+      if (File.check(data)) {
+        files = new Files()
+        files.addFile(data)
+        matchingFiles = files.matches(options.pattern)
+      } else if (Files.check(data)) {
+        files = data
+        matchingFiles = await files.glob(options)
+      } else {
+        files = new Files()
+        matchingFiles = await files.glob(options)
+      }
+    }
+
+    if (matchingFiles.length > 1) {
+      matches = new Files()
+      matches.addFiles(matchingFiles)
+    } else if (matchingFiles.length === 1) {
+      matches = matchingFiles[0]
+    } else {
+      matches = new Files()
+    }
+
+    files._currentTask = task
+    matches._currentTask = task
+
+    if (options.globFiles && options.pattern) {
+      files.log(`${matches.length} file ${matches.length === 1 ? 'match' : 'matches'} found.`, null)
+    }
+
+    return {files, matches}
+  }
+
   _logNoFile (path) {
     this.log(`File ${path} not found.`)
   }
@@ -169,7 +258,7 @@ class Files extends Data {
 
     for (let file of this) {
       file._currentTask = this._currentTask
-      if(options.dest) {
+      if (options.dest) {
         file.path = options.base ? path.join(options.dest, file.relative(options.base)) : options.dest
       }
       await file.write(options)
@@ -201,86 +290,6 @@ class Files extends Data {
 
     return file
   }
-
-  set options (options) {
-    this._options = merge(defaults, options)
-  }
-
-  set outdated (value) {
-    for (let file of this) {
-      file.outdated = value
-    }
-  }
-
-  static check (data) {
-    return data instanceof Files
-  }
-
-  static async factory (data = {}, task = null) {
-    let isHandover = data && data.isHandover
-
-    let options = (
-        isHandover ? (task.handoverConfig.files || task.handoverConfig.file) : (task.config.files || task.config.file)
-      ) || {}
-
-    let files = null
-    let matchingFiles = null
-    let matches = null
-
-    // get pattern
-    if (typeof options === 'string' || options instanceof Array) {
-      options = {pattern: options}
-    }
-
-    // console.log(options)
-
-    // find matches
-    if (isHandover) {
-      if (File.check(data)) {
-        files = new Files()
-        files.addFile(data)
-      } else if (Files.check(data)) {
-        files = data
-      } else {
-        files = new Files()
-      }
-      matchingFiles = files.matches(options.pattern)
-    } else {
-      if (File.check(data)) {
-        files = new Files()
-        files.addFile(data)
-        matchingFiles = files.matches(options.pattern)
-      } else if (Files.check(data)) {
-        files = data
-        matchingFiles = await files.glob(options)
-      } else {
-        files = new Files()
-        matchingFiles = await files.glob(options)
-      }
-    }
-
-    if (matchingFiles.length > 1) {
-      matches = new Files()
-      matches.addFiles(matchingFiles)
-    } else if (matchingFiles.length === 1) {
-      matches = matchingFiles[0]
-    } else {
-      matches = new Files()
-    }
-
-    files._currentTask = task
-    matches._currentTask = task
-
-    if (options.globFiles && options.pattern) {
-      files.log(`${matches.length} file ${matches.length === 1 ? 'match' : 'matches'} found.`, null)
-    }
-
-    return {files, matches}
-  }
-
-  get length () { return this._data.size }
-
-  get size () { return this._data.size }
 
   [Symbol.iterator] () { return this._data.values() }
 }
