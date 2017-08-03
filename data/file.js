@@ -227,20 +227,60 @@ class File extends Data {
     this._root = root
     this._base = base
     this._name = name
-    this._ext = ext
+    this._ext = ext.substr(1)
   }
 
   get root () { return this._root }
 
+  set root (root) {
+    this.path = path.format({
+      root,
+      base: this._base
+    })
+  }
+
   get dir () { return this._dir }
+
+  set dir (dir) {
+    this.path = path.format({
+      dir,
+      base: this._base
+    })
+  }
 
   get base () { return this._base }
 
+  set base (base) {
+    this.path = path.format({
+      dir: this._dir,
+      base
+    })
+  }
+
   get ext () { return this._ext }
+
+  set ext (ext) {
+    ext = ext.charAt(0) !== '.' ? `.${ext}` : ext
+    this.path = path.format({
+      dir: this._dir,
+      name: this._name,
+      ext
+    })
+  }
 
   get extension () { return this._ext }
 
-  get name () { return this._ext }
+  set extension (value) { this.ext = value }
+
+  get name () { return this._name }
+
+  set name (name) {
+    this.path = path.format({
+      dir: this._dir,
+      name,
+      ext: this._ext
+    })
+  }
 
   get encoding () { return this._encoding }
 
