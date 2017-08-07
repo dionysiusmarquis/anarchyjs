@@ -34,7 +34,8 @@ async function executor (data, task) {
 
       let fileData = null
       for (let [, exec] of config.queue.entries()) {
-        let transform = exec.transform || exec.func
+        let transform = Object.keys(exec).filter(key => key !== 'then')[0]
+        let options = exec[transform]
 
         newFileExt = ['jpeg', 'jpg', 'png', 'webp', 'tiff', 'raw', 'svg'].indexOf(transform) !== -1 ? transform : fileExt
 
@@ -42,10 +43,13 @@ async function executor (data, task) {
           transform = 'jpeg'
         }
 
-        fileData = await image[transform](exec.options || exec['()'])
+        if (!image[transform]) {
+          throw new Error(`no sharp transform named ${transform} found`)
+        }
+        fileData = await image[transform](options)
 
         if (exec.then) { // todo test
-          fileData = await exec.then.func(fileData, exec.then.options || exec.then['()'])
+          fileData = await exec.then(fileData, exec.then.options || exec.then['()'])
         }
       }
 
