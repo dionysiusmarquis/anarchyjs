@@ -126,28 +126,68 @@ function size (data, task) {
   }
 }
 
-async function hash (data, task) {
+function hash (data, task) {
   if (_check(data, task)) {
     for (let file of data) {
       if (file._data) {
         let options = Object.assign({algorithm: 'md5'}, task.config.options) // https://www.npmjs.com/package/hasha
         let dataHash = hasha(file._data, options)
 
-        task.log(`Hashed ${file.path}`, null)
+        task.log(`Hashed ${file.path}`.gray, null)
 
-        file.path = path.format({
-          root: file._root,
-          dir: file._dir,
-          name: `${file._name}.${dataHash}`,
-          ext: file._ext
-        })
+        file.name = `${file._name}.${dataHash}`
       } else {
-        task.log(`File ${file.path} has no data for hashing`, task.LOG_TYPE_WARNING)
+        task.log(`File ${file.path} has no data for hashing`.gray, task.LOG_TYPE_WARNING)
       }
     }
   }
 
   return data
+}
+
+function encode (data, task) {
+  if (_check(data, task)) {
+    for (let file of data) {
+      if (file._data) {
+        let encoding = task.encoding || 'utf8'
+        file.data = file.asEncoded(encoding)
+
+        task.log(`Encoded to ${encoding} ${file.path}`.gray, null)
+      } else {
+        task.log(`File ${file.path} has no data to convert`.gray, task.LOG_TYPE_WARNING)
+      }
+    }
+  }
+}
+
+function dataUrl (data, task) {
+  if (_check(data, task)) {
+    for (let file of data) {
+      if (file._data) {
+        file.data = file.asEncoded('base64')
+
+        task.log(`Converted to data url ${file.path}`.gray, null)
+      } else {
+        task.log(`File ${file.path} has no data to convert`.gray, task.LOG_TYPE_WARNING)
+      }
+    }
+  }
+
+  return data
+}
+
+function buffer (data, task) {
+  if (_check(data, task)) {
+    for (let file of data) {
+      if (file._data) {
+        file.data = Buffer.from(file._data, task.encoding || 'utf8')
+
+        task.log(`Converted to buffer ${file.path}`.gray, null)
+      } else {
+        task.log(`File ${file.path} has no data to convert`.gray, task.LOG_TYPE_WARNING)
+      }
+    }
+  }
 }
 
 module.exports = {
@@ -165,5 +205,8 @@ module.exports = {
   size,
   length: size,
   hash,
+  encode,
+  dataUrl,
+  buffer,
   defaults
 }

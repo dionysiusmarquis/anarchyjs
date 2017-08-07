@@ -1,6 +1,8 @@
 const fs = require('fs-extra')
 const path = require('path')
 const merge = require('deepmerge')
+const mimeTypes = require('mime-types')
+const encoding = require('encoding')
 
 const Data = require('./data')
 
@@ -148,6 +150,15 @@ class File extends Data {
     return path.relative(from, this._path)
   }
 
+  toBuffer () {
+    if (this._data instanceof Buffer) {
+      return
+    }
+
+    this._encoding = 'buffer'
+    this.data = Buffer.from(this._data, this._encoding)
+  }
+
   getSourceMappingURL (options = null) {
     let sourceMapPath = `${this._path}.map`
 
@@ -181,7 +192,20 @@ class File extends Data {
     return {path: sourceMapPath, url: null, inline: false}
   }
 
+  asEncoded (encoding) { return (this._data instanceof Buffer ? this._data : Buffer.from(this._data)).toString(encoding) }
+
   * [Symbol.iterator] () { yield this }
+
+  get dataUrl () {
+    let type = mimeTypes.lookup(this._path)
+    if (!type) {
+      throw new Error(`No MIME type for ${this.path} detected.`)
+    }
+
+    return `data:${type};base64,${this.asEncoded('base64')}`
+  }
+
+  get buffer () { return this._data instanceof Buffer ? this._data : Buffer.from(this._data, this._encoding) }
 
   get options () { return this._options }
 
@@ -284,9 +308,20 @@ class File extends Data {
 
   get encoding () { return this._encoding }
 
+  set encoding (encoding) {
+    if (this._data instanceof Buffer) {
+      this.data = this._data.toString(encoding)
+    } else {
+      this._encoding = encoding
+      this.data = encoding.convert(this._data, encoding, this._encoding).toString(encoding)
+    }
+  }
+
   get sourceMap () { return this._sourceMap }
 
   get history () { return this._history }
+
+  get mimeType () { mimeTypes.lookup(this._path) }
 
   get length () { return 1 }
 
