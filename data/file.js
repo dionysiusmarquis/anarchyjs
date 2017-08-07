@@ -302,7 +302,7 @@ class File extends Data {
     this.path = path.format({
       dir: this._dir,
       name,
-      ext: this._ext
+      ext: `.${this._ext}`
     })
   }
 
